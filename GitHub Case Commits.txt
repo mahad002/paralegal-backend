@@ -1,0 +1,6 @@
+GitHub Case Commits
+
+==> Create Case
+==> Create Branches (To make a tree) (In each Branch there will be a separate Case stored)
+==> Case Commit (In each commit the state of the previous case will be stored)
+
