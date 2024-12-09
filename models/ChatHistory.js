@@ -4,7 +4,7 @@ const ChatHistorySchema = new mongoose.Schema({
   caseId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Case',
-    required: function() { return this.botType === 'Assistance'; } // Required for Assistance Bot
+    required: function() { return this.botType === 'Assistance'; } // required for Assistance Bot
   },
   botType: {
     type: String,

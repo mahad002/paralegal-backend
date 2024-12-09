@@ -4,7 +4,8 @@ const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
 const caseRoutes = require('./routes/caseRoutes');
 const caseCommitRoutes = require('./routes/caseCommitRoutes');
-const chatHistoryRoutes = require('./routes/chatRoutes');
+const chatHistoryRoutes = require('./routes/chatHistoryRoutes');
+const caseNoteRoutes = require('./routes/caseNoteRoutes'); // Import Case Note Routes
 
 // Initialize Express app
 const app = express();
@@ -12,21 +13,21 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// Middleware to parse JSON
-app.use(express.json());
-
-// Use CORS middleware
-app.use(cors());
+// Middleware
+app.use(express.json()); // Parse incoming JSON requests
+app.use(cors()); // Enable CORS for all routes
 
 // Routes
-app.use('/api/users', userRoutes);
-app.use('/api/cases', caseRoutes);
-app.use('/api/case-commits', caseCommitRoutes);
-app.use('/api/chat-history', chatHistoryRoutes);
+app.use('/users', userRoutes);
+app.use('/cases', caseRoutes);
+app.use('/case-commits', caseCommitRoutes);
+app.use('/chat-history', chatHistoryRoutes);
+app.use('/case-notes', caseNoteRoutes); // Add Case Note Routes
 
-// Simple route to check server status
-app.get('/', (req, res) => res.send('API is running...'));
+// Health check route
+app.get('/', (req, res) => res.send('Server is running...'));
 
 // Start the server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+    
