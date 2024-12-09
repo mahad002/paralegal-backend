@@ -1,17 +1,13 @@
-// db.js
 const mongoose = require('mongoose');
-require('dotenv').config();  // Load environment variables
+require('dotenv').config();
 
 const connectDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
+        await mongoose.connect(process.env.MONGO_URI);
         console.log('MongoDB Connected to paralegal database...');
-    } catch (err) {
-        console.error('Error connecting to MongoDB:', err.message);
-        process.exit(1); // Exit process with failure
+    } catch (error) {
+        console.error('Error connecting to MongoDB:', error.message);
+        process.exit(1);
     }
 };
 
