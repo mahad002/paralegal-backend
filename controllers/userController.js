@@ -115,39 +115,17 @@ exports.deleteUser = async (req, res) => {
 
 // Get Current User
 exports.getCurrentUser = async (req, res) => {
-  try {
-    // Ensure `authMiddleware` has populated `req.user`
-    if (!req.user || !req.user.id) {
-      return res.status(400).json({
-        success: false,
-        message: 'User information is missing from the request',
-      });
-    }
+  const token = localStorage.getItem('token');
+  console.log('Fetching current user. Token provided:', !!token);
 
-    console.log('Fetching user with ID:', req.user.id);
-
-    // Fetch the user from the database using the ID in the token
-    const user = await User.findById(req.user.id).select('-password'); // Exclude password field
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found',
-      });
-    }
-
-    console.log('User found:', user);
-
-    // Send the user information back
-    return res.status(200).json({
-      success: true,
-      user, // Send user object
-    });
-  } catch (error) {
-    console.error('Error fetching current user:', error.message);
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-    });
+  if (!token) {
+    throw new Error('Authentication token is missing.');
   }
+
+  const data = await fetchAPI<{ user: User }>('/users/me', {
+    method: 'GET',
+  });
+
+  console.log('Successfully fetched current user:', data.user);
+  return data.user;
 };
