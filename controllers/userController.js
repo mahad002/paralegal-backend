@@ -143,19 +143,3 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-// Get Cases by User
-exports.getCasesByUser = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const cases = await Case.find({ user: userId });
-
-    if (!cases.length) {
-      return res.status(404).json({ message: 'No cases found for this user' });
-    }
-
-    res.status(200).json(cases);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
