@@ -35,7 +35,7 @@ exports.uploadFiles = async (req, res) => {
             };
 
             await s3Client.send(new PutObjectCommand(uploadParams));
-            const link = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${newFilename}`;
+            const link = `https://${process.env.AWS_BUCKET_NAME}.s3.ap-south-1.amazonaws.com/${newFilename}`;
             links.push(link);
         }
 
