@@ -15,4 +15,6 @@ router.get('/:id', auth, userController.getUserById); // Admin or self
 router.put('/:id', auth, userController.updateUser); // Admin or self
 router.delete('/:id', auth, userController.deleteUser); // Admin-only
 
+router.get('/me', auth, userController.getCurrentUser);
+
 module.exports = router;
