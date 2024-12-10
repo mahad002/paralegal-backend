@@ -77,7 +77,7 @@ exports.getCasesByUser = async (req, res) => {
     const cases = await Case.find({ user: userId });
 
     if (!cases.length) {
-      return res.status(404).json({ message: 'No cases found for this user' });
+      return res.status(200).json({ message: 'No cases found for this user' });
     }
 
     res.status(200).json(cases);
