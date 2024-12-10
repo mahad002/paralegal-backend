@@ -71,6 +71,23 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
+// Get Current User
+exports.getCurrentUser = async (req, res) => {
+  const token = localStorage.getItem('token');
+  console.log('Fetching current user. Token provided:', !!token);
+
+  if (!token) {
+    throw new Error('Authentication token is missing.');
+  }
+
+  const data = await fetchAPI<{ user: User }>('/users/me', {
+    method: 'GET',
+  });
+
+  console.log('Successfully fetched current user:', data.user);
+  return data.user;
+};
+
 // Get All Users
 exports.getAllUsers = async (req, res) => {
   try {
@@ -111,21 +128,4 @@ exports.deleteUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-};
-
-// Get Current User
-exports.getCurrentUser = async (req, res) => {
-  const token = localStorage.getItem('token');
-  console.log('Fetching current user. Token provided:', !!token);
-
-  if (!token) {
-    throw new Error('Authentication token is missing.');
-  }
-
-  const data = await fetchAPI<{ user: User }>('/users/me', {
-    method: 'GET',
-  });
-
-  console.log('Successfully fetched current user:', data.user);
-  return data.user;
 };
