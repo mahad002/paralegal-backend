@@ -73,19 +73,33 @@ exports.resetPassword = async (req, res) => {
 
 // Get Current User
 exports.getCurrentUser = async (req, res) => {
-  const token = localStorage.getItem('token');
-  console.log('Fetching current user. Token provided:', !!token);
+  try {
+    // Extract the token from the Authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
+    }
 
-  if (!token) {
-    throw new Error('Authentication token is missing.');
+    const token = authHeader.split(' ')[1];
+
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded || !decoded.user || !decoded.user.id) {
+      return res.status(401).json({ success: false, message: 'Invalid token' });
+    }
+
+    // Fetch the user from the database
+    const user = await User.findById(decoded.user.id).select('-password'); // Exclude password
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Respond with the user data
+    return res.status(200).json({ success: true, user });
+  } catch (error) {
+    console.error('Error fetching current user:', error.message);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
-
-  const data = await fetchAPI<{ user: User }>('/users/me', {
-    method: 'GET',
-  });
-
-  console.log('Successfully fetched current user:', data.user);
-  return data.user;
 };
 
 // Get All Users
