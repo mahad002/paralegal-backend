@@ -8,5 +8,6 @@ router.get('/:id', auth, caseController.getCaseById);
 router.post('/', auth, caseController.createCase);
 router.put('/:id', auth, caseController.updateCase);
 router.delete('/:id', auth, caseController.deleteCase);
+router.get('/user/:userId', auth, caseController.getCasesByUser);
 
 module.exports = router;
