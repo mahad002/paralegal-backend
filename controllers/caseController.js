@@ -32,7 +32,7 @@ exports.createCase = async (req, res) => {
       caseNumber,
       description,
       status,
-      creator: req.user.id, // Set the authenticated user as the creator
+      creator: req.user.id, 
       caseOwner,
       parties,
       documents,
@@ -74,7 +74,7 @@ exports.deleteCase = async (req, res) => {
 exports.getCasesByUser = async (req, res) => {
   try {
     const { userId } = req.params;
-    const cases = await Case.find({ user: userId });
+    const cases = await Case.find({ creator: userId });
 
     if (!cases.length) {
       return res.status(200).json({ message: 'No cases found for this user' });
