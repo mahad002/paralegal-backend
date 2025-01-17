@@ -98,6 +98,7 @@ exports.getCasesByUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+<<<<<<< HEAD
 };
 
 // Get Cases Associated with Firm's Lawyers
@@ -122,3 +123,6 @@ exports.getCasesByFirm = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+=======
+};
+>>>>>>> c110f2a0163d721de3cef3550f22a327ce2542c4
