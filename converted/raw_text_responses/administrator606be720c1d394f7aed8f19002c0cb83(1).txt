@@ -1,0 +1,1 @@
+{"created":1737122969,"model":"llama3.2-11b-vision","usage":{"prompt_tokens":199,"completion_tokens":54,"total_tokens":253},"choices":[{"finish_reason":"stop","index":0,"logprobs":null,"message":{"content":"{\n  \"name\": \"CamScanner\",\n  \"date\": \"NA\",\n  \"tagline\": \"NA\"\n}","refusal":null,"role":"assistant","audio":null,"function_call":null,"tool_calls":null}}]}

@@ -1,0 +1,1 @@
+{"created":1737132738,"model":"llama3.2-11b-vision","usage":{"prompt_tokens":11279,"completion_tokens":56,"total_tokens":11335},"choices":[{"finish_reason":"stop","index":0,"logprobs":null,"message":{"content":"{\n  \"name\": \"Syz\",\n  \"date\": \"2002\",\n  \"tagline\": \"Syz\"\n}","refusal":null,"role":"assistant","audio":null,"function_call":null,"tool_calls":null}}]}

@@ -1,0 +1,1 @@
+{"created":1737132910,"model":"llama3.2-11b-vision","usage":{"prompt_tokens":4792,"completion_tokens":102,"total_tokens":4894},"choices":[{"finish_reason":"stop","index":0,"logprobs":null,"message":{"content":"{\n\"name\": \"\",\n\"date\": \"\",\n\"tagline\": \"\"\n}","refusal":null,"role":"assistant","audio":null,"function_call":null,"tool_calls":null}}]}

@@ -1,0 +1,1 @@
+{"created":1737132710,"model":"llama3.2-11b-vision","usage":{"prompt_tokens":13635,"completion_tokens":56,"total_tokens":13691},"choices":[{"finish_reason":"stop","index":0,"logprobs":null,"message":{"content":"{\n  \"name\": \"1882\",\n  \"date\": \"1882\",\n  \"tagline\": \"1882\"\n}","refusal":null,"role":"assistant","audio":null,"function_call":null,"tool_calls":null}}]}
