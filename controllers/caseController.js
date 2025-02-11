@@ -1,4 +1,5 @@
 const Case = require('../models/Case');
+const CaseCommit = require('../models/CaseCommit');
 
 // Get All Cases
 exports.getAllCases = async (req, res) => {
@@ -98,7 +99,6 @@ exports.getCasesByUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-<<<<<<< HEAD
 };
 
 // Get Cases Associated with Firm's Lawyers
@@ -123,6 +123,51 @@ exports.getCasesByFirm = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-=======
+
+// Update a Case (Create a Commit Before Modifying)
+exports.updateCase = async (req, res) => {
+  try {
+    const caseId = req.params.id;
+    const updatedData = req.body;
+
+    const currentCase = await Case.findById(caseId);
+    if (!currentCase) return res.status(404).json({ message: 'Case not found' });
+
+    // Save a commit before making changes
+    const newCommit = new CaseCommit({
+      case: caseId,
+      user: req.user.id,
+      commitTitle: "Case Update",
+      commitDescription: "Updated case details",
+      snapshot: currentCase.toObject()
+    });
+
+    await newCommit.save();
+    await Case.findByIdAndUpdate(caseId, { $push: { commits: newCommit._id } });
+
+    // Apply the update
+    const updatedCase = await Case.findByIdAndUpdate(caseId, updatedData, { new: true });
+
+    res.status(200).json(updatedCase);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
->>>>>>> c110f2a0163d721de3cef3550f22a327ce2542c4
+
+// Revert Case to Specific Commit
+exports.revertCaseToCommit = async (req, res) => {
+  try {
+    const { caseId, commitId } = req.params;
+
+    const commit = await CaseCommit.findById(commitId);
+    if (!commit) {
+      return res.status(404).json({ message: "Commit not found" });
+    }
+
+    await Case.findByIdAndUpdate(caseId, commit.snapshot, { new: true });
+
+    res.status(200).json({ message: "Case reverted successfully", commit });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
