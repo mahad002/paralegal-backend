@@ -9,10 +9,15 @@ const UserSchema = new mongoose.Schema({
     enum: ['admin', 'firm', 'lawyer'],
     required: true,
   },
+  firmId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',  // Reference to the 'firm' user document
+    default: null,  // null if the user is not associated with any firm (only for 'lawyer' role)
+  },
   lawyers: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Reference to other User documents (lawyers under the firm)
+      ref: 'User', // Reference to other 'User' documents (lawyers under the firm)
     },
   ], // Only for role 'firm'
 }, { timestamps: true });
