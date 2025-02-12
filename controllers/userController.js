@@ -209,3 +209,77 @@
       res.status(500).json({ error: error.message });
     }
   };
+
+  // Get Lawyers Under a Firm
+exports.getLawyersByFirm = async (req, res) => {
+  try {
+    const firmId = req.user.id;
+
+    // Ensure the user is a firm
+    const firm = await User.findById(firmId).populate('lawyers');
+    if (!firm || firm.role !== 'firm') {
+      return res.status(403).json({ message: 'Only firms can access their lawyers.' });
+    }
+
+    res.status(200).json(firm.lawyers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Add a Lawyer to a Firm
+exports.addLawyerToFirm = async (req, res) => {
+  try {
+    const { lawyerId } = req.body;
+    const firmId = req.user.id;
+
+    // Ensure the user is a firm
+    const firm = await User.findById(firmId);
+    if (!firm || firm.role !== 'firm') {
+      return res.status(403).json({ message: 'Only firms can add lawyers.' });
+    }
+
+    // Ensure the lawyer exists
+    const lawyer = await User.findById(lawyerId);
+    if (!lawyer || lawyer.role !== 'lawyer') {
+      return res.status(404).json({ message: 'Lawyer not found or invalid role.' });
+    }
+
+    // Add the lawyer to the firm's list
+    if (!firm.lawyers.includes(lawyerId)) {
+      firm.lawyers.push(lawyerId);
+      await firm.save();
+    }
+
+    res.status(200).json({ message: 'Lawyer added to firm successfully.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Remove a Lawyer from a Firm
+exports.removeLawyerFromFirm = async (req, res) => {
+  try {
+    const { lawyerId } = req.params;  // Using route params to get lawyer ID
+    const firmId = req.user.id;
+
+    // Ensure the user is a firm
+    const firm = await User.findById(firmId);
+    if (!firm || firm.role !== 'firm') {
+      return res.status(403).json({ message: 'Only firms can remove lawyers.' });
+    }
+
+    // Ensure the lawyer exists and is associated with the firm
+    if (!firm.lawyers.includes(lawyerId)) {
+      return res.status(404).json({ message: 'Lawyer not associated with this firm.' });
+    }
+
+    // Remove the lawyer from the firm's lawyers list
+    firm.lawyers.pull(lawyerId);
+    await firm.save();
+
+    res.status(200).json({ message: 'Lawyer removed from firm successfully.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
