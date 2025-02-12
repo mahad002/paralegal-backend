@@ -199,6 +199,11 @@ exports.addLawyerToFirm = async (req, res) => {
     }
 
     // Check if the lawyer is already associated with another firm
+    if (lawyer.firmId && lawyer.firmId.toString() == firmId.toString()) {
+      return res.status(200).json({ message: 'Lawyer added or was already added to firm.' });
+    }
+
+    // Check if the lawyer is already associated with another firm
     if (lawyer.firmId && lawyer.firmId.toString() !== firmId.toString()) {
       return res.status(400).json({
         message: 'This lawyer is already associated with another firm. Kindly submit a removal request to your previous firm in order to join this one.',
@@ -209,11 +214,9 @@ exports.addLawyerToFirm = async (req, res) => {
     if (!firm.lawyers.includes(lawyerId)) {
       firm.lawyers.push(lawyerId);
       await firm.save();  // Save the updated firm
+    } 
 
-      res.status(200).json({ message: 'Lawyer added to firm successfully.' });
-    } else {
-      res.status(400).json({ message: 'This lawyer is already associated with this firm.' });
-    }
+    res.status(200).json({ message: 'Lawyer added to firm successfully.' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
