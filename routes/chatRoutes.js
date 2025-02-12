@@ -18,7 +18,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.post('/', authMiddleware, createChatHistory); // Create chat history entry
-router.get('/:caseId', authMiddleware, getChatHistory); // Get chat history for a specific case
+router.post('/', auth.protect, createChatHistory); // Create chat history entry
+router.get('/:caseId', auth.protect, getChatHistory); // Get chat history for a specific case
 
 module.exports = router;

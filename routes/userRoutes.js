@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/authMiddleware');
+const auth = require('../middleware/authMiddleware');  // Importing the auth middleware
 const userController = require('../controllers/userController');
 
 // Authentication Routes
@@ -9,13 +9,11 @@ router.post('/login', userController.login);
 router.post('/forgot-password', userController.forgotPassword);
 router.post('/reset-password', userController.resetPassword);
 
-router.get('/me', auth, userController.getCurrentUser);
-
 // User Management Routes
-router.get('/', auth, userController.getAllUsers); // Admin-only
-router.get('/:id', auth, userController.getUserById); // Admin or self
-router.put('/:id', auth, userController.updateUser); // Admin or self
-router.delete('/:id', auth, userController.deleteUser); // Admin-only
-
+router.get('/me', auth.protect, userController.getCurrentUser);  // Protecting the 'me' route
+router.get('/', auth.protect, auth.admin, userController.getAllUsers);  // Admin-only route to get all users
+router.get('/:id', auth.protect, userController.getUserById);  // Protecting 'get user by id' route
+router.put('/:id', auth.protect, userController.updateUser);  // Protecting the 'update user' route
+router.delete('/:id', auth.protect, auth.admin, userController.deleteUser);  // Admin-only route to delete a user
 
 module.exports = router;
