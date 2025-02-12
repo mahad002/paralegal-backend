@@ -230,8 +230,8 @@ exports.getLawyersByFirm = async (req, res) => {
 // Add a Lawyer to a Firm
 exports.addLawyerToFirm = async (req, res) => {
   try {
-    const { lawyerId } = req.body;
-    const firmId = req.user.id;
+    const { lawyerId, name, email, password } = req.body;  // Allow the creation of a new lawyer if they don't exist
+    const firmId = req.user.id;  // The ID of the authenticated firm
 
     // Ensure the user is a firm
     const firm = await User.findById(firmId);
@@ -239,19 +239,53 @@ exports.addLawyerToFirm = async (req, res) => {
       return res.status(403).json({ message: 'Only firms can add lawyers.' });
     }
 
-    // Ensure the lawyer exists
-    const lawyer = await User.findById(lawyerId);
-    if (!lawyer || lawyer.role !== 'lawyer') {
-      return res.status(404).json({ message: 'Lawyer not found or invalid role.' });
+    // Check if the lawyer exists in the system
+    let lawyer = await User.findById(lawyerId);
+
+    // If the lawyer doesn't exist, create a new user account as a lawyer
+    if (!lawyer) {
+      if (!name || !email || !password) {
+        return res.status(400).json({ message: 'Name, email, and password are required to create a new lawyer account.' });
+      }
+
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create a new lawyer account
+      lawyer = new User({
+        name,
+        email,
+        password: hashedPassword,
+        role: 'lawyer',
+      });
+
+      await lawyer.save();  // Save the new lawyer
     }
 
-    // Add the lawyer to the firm's list
+    // Ensure the lawyer's role is 'lawyer'
+    if (lawyer.role !== 'lawyer') {
+      return res.status(400).json({ message: 'This user is not a lawyer.' });
+    }
+
+    // Check if the lawyer is already associated with another firm
+    const currentFirm = await User.findOne({ lawyers: lawyerId });
+
+    // If the lawyer is already associated with a firm
+    if (currentFirm) {
+      return res.status(400).json({
+        message: 'This lawyer is already associated with another firm. Kindly submit a removal request to your previous firm in order to join this one.',
+      });
+    }
+
+    // If the lawyer is not associated with any firm, add them to the current firm’s lawyers list
     if (!firm.lawyers.includes(lawyerId)) {
       firm.lawyers.push(lawyerId);
-      await firm.save();
-    }
+      await firm.save();  // Save the updated firm
 
-    res.status(200).json({ message: 'Lawyer added to firm successfully.' });
+      res.status(200).json({ message: 'Lawyer added to firm successfully.' });
+    } else {
+      res.status(400).json({ message: 'This lawyer is already associated with this firm.' });
+    }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
