@@ -52,7 +52,7 @@ exports.login = async (req, res) => {
     }
 
     const token = generateToken(user);
-    res.status(200).json({ token });
+    res.status(200).json({ token, user });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -200,7 +200,7 @@ exports.addLawyerToFirm = async (req, res) => {
 
     // Check if the lawyer is already associated with another firm
     if (lawyer.firmId && lawyer.firmId.toString() == firmId.toString()) {
-      return res.status(200).json({ message: 'Lawyer added or was already added to firm.' });
+      return res.status(200).json({ message: 'Lawyer added  to firm successfully.' });
     }
 
     // Check if the lawyer is already associated with another firm
@@ -225,19 +225,22 @@ exports.addLawyerToFirm = async (req, res) => {
 // Get Lawyers Under a Firm
 exports.getLawyersByFirm = async (req, res) => {
   try {
-    const firmId = req.user.id;
+    const firmId = req.user.id.toString();  // The ID of the authenticated firm
 
     // Ensure the user is a firm
-    const firm = await User.findById(firmId).populate('lawyers');
+    const firm = await User.findById(firmId).populate('lawyers', 'name email'); // Populate lawyers
+
     if (!firm || firm.role !== 'firm') {
       return res.status(403).json({ message: 'Only firms can access their lawyers.' });
     }
 
-    res.status(200).json(firm.lawyers);
+    res.status(200).json(firm.lawyers);  // Return the populated lawyers list
   } catch (error) {
+    console.error('Error fetching lawyers by firm:', error);
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // Remove a Lawyer from a Firm
 exports.removeLawyerFromFirm = async (req, res) => {

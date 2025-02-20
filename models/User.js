@@ -17,9 +17,9 @@ const UserSchema = new mongoose.Schema({
   lawyers: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Reference to other 'User' documents (lawyers under the firm)
+      ref: 'User',  // This is referencing the 'User' collection (the lawyer model)
     },
-  ], // Only for role 'firm'
+  ]   // Only for role 'firm'
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
