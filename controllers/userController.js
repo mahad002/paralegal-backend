@@ -4,7 +4,7 @@ const User = require('../models/User');
 
 // Helper: Generate JWT
 const generateToken = (user) => {
-  return jwt.sign({ user: { id: user._id, role: user.role } }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  return jwt.sign({ user: { id: user._id, role: user.role } }, process.env.JWT_SECRET, { expiresIn: '12h' });
 };
 
 // Signup
@@ -157,67 +157,95 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-// Add a Lawyer to a Firm
-exports.addLawyerToFirm = async (req, res) => {
+// ✅ **1. Adding an Existing Lawyer to a Firm**
+// Route: POST /users/lawyers/add
+// Request Body: { lawyerId }
+// Returns: { message: 'Lawyer added successfully' }
+exports.addExistingLawyerToFirm = async (req, res) => {
   try {
-    const { lawyerId, name, email, password } = req.body;
-    const firmId = req.user.id;  // The ID of the authenticated firm
+    const { lawyerId } = req.body;
+    const firmId = req.user.id;
 
-    // Ensure the user is a firm
+    // Check if firm exists and has the right role
     const firm = await User.findById(firmId);
     if (!firm || firm.role !== 'firm') {
       return res.status(403).json({ message: 'Only firms can add lawyers.' });
     }
 
-    // Check if the lawyer exists in the system
-    let lawyer = await User.findById(lawyerId);
-
-    // If the lawyer doesn't exist, create a new user account as a lawyer
+    // Check if the lawyer exists
+    const lawyer = await User.findById(lawyerId);
     if (!lawyer) {
-      if (!name || !email || !password) {
-        return res.status(400).json({ message: 'Name, email, and password are required to create a new lawyer account.' });
-      }
-
-      // Hash the password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Create a new lawyer account
-      lawyer = new User({
-        name,
-        email,
-        password: hashedPassword,
-        role: 'lawyer',
-        firmId: firmId,  // Set the firmId to associate this lawyer with the firm
-      });
-
-      await lawyer.save();  // Save the new lawyer
+      return res.status(404).json({ message: 'Lawyer not found. Please register first.' });
     }
 
-    // Ensure the lawyer's role is 'lawyer'
+    // Ensure the user is actually a lawyer
     if (lawyer.role !== 'lawyer') {
       return res.status(400).json({ message: 'This user is not a lawyer.' });
     }
 
-    // Check if the lawyer is already associated with another firm
-    if (lawyer.firmId && lawyer.firmId.toString() == firmId.toString()) {
-      return res.status(200).json({ message: 'Lawyer added  to firm successfully.' });
+    // Ensure the lawyer is not already assigned to another firm
+    if (lawyer.firmId && lawyer.firmId.toString() !== firmId.toString()) {
+      return res.status(400).json({ message: 'Lawyer is already associated with another firm.' });
     }
 
-    // Check if the lawyer is already associated with another firm
-    if (lawyer.firmId && lawyer.firmId.toString() !== firmId.toString()) {
-      return res.status(400).json({
-        message: 'This lawyer is already associated with another firm. Kindly submit a removal request to your previous firm in order to join this one.',
-      });
+    // Check if lawyer is already added to the firm
+    if (firm.lawyers.includes(lawyer._id)) {
+      return res.status(400).json({ message: 'Lawyer is already added to this firm.' });
     }
 
     // Add the lawyer to the firm’s lawyers list
-    if (!firm.lawyers.includes(lawyerId)) {
-      firm.lawyers.push(lawyerId);
-      await firm.save();  // Save the updated firm
-    } 
+    firm.lawyers.push(lawyer._id);
+    await firm.save();
 
     res.status(200).json({ message: 'Lawyer added to firm successfully.' });
   } catch (error) {
+    console.error("Error adding existing lawyer:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ✅ **2. Registering a New Lawyer Under a Firm**
+// Route: POST /users/lawyers/register
+// Request Body: { name, email, password }
+// Returns: { message: 'Lawyer registered successfully', lawyer }
+exports.registerLawyerThroughFirm = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    const firmId = req.user.id;
+
+    // Ensure the requester is a firm
+    const firm = await User.findById(firmId);
+    if (!firm || firm.role !== 'firm') {
+      return res.status(403).json({ message: 'Only firms can register lawyers.' });
+    }
+
+    // Check if the lawyer is already registered
+    const existingLawyer = await User.findOne({ email });
+    if (existingLawyer) {
+      return res.status(400).json({ message: 'A lawyer with this email already exists. Please add them instead.' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create new lawyer
+    const newLawyer = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role: 'lawyer',
+      firmId: firmId,  // Associate with the firm
+    });
+
+    await newLawyer.save();
+
+    // Add to firm’s list
+    firm.lawyers.push(newLawyer._id);
+    await firm.save();
+
+    res.status(201).json({ message: 'Lawyer registered successfully', lawyer: newLawyer });
+  } catch (error) {
+    console.error("Error registering lawyer:", error);
     res.status(500).json({ error: error.message });
   }
 };
