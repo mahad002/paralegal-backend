@@ -3,9 +3,6 @@ const router = express.Router();
 const auth = require('../middleware/authMiddleware');
 const userController = require('../controllers/userController');
 
-// console.log('Loaded User Controller:', Object.keys(userController));
-// console.log('getLawyersByFirm type:', typeof userController.getLawyersByFirm); // Debug the function type
-
 // Authentication Routes
 router.post('/signup', userController.signup);
 router.post('/login', userController.login);

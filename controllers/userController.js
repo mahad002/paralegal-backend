@@ -282,6 +282,7 @@ exports.getLawyersByFirm = async (req, res) => {
 
 // ✅ Remove a Lawyer from a Firm
 exports.removeLawyerFromFirm = async (req, res) => {
+  console.log('Removing lawyer from firm:', req.params);  
   try {
     const { lawyerId } = req.params;
     const firmId = req.user.id;
@@ -299,7 +300,9 @@ exports.removeLawyerFromFirm = async (req, res) => {
     }
 
     // Ensure the lawyer is associated with the firm
-    if (!firm.lawyers.includes(lawyerId)) {
+    if (lawyer.firmId !== firmId) {
+      // console.log('Lawyer is not associated with this firm:', lawyer.firmId, firmId);
+      // console.log('Firm Lawyers:', firm.id, firm.lawyers);
       return res.status(404).json({ message: 'Lawyer is not associated with this firm.' });
     }
 
