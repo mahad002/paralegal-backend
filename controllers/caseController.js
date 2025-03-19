@@ -1,5 +1,6 @@
 const Case = require('../models/Case');
 const CaseCommit = require('../models/CaseCommit');
+const User = require('../models/User');
 
 // Get All Cases
 exports.getAllCases = async (req, res) => {
