@@ -251,25 +251,23 @@ exports.registerLawyerThroughFirm = async (req, res) => {
   }
 };
 
-// Get Lawyers Under a Firm
+// ✅ Get Lawyers Under a Firm
 exports.getLawyersByFirm = async (req, res) => {
   try {
-    const firmId = req.user.id; // The ID of the authenticated firm
+    const firmId = req.user.id; // Authenticated firm ID
     
-    console.log('Firm ID:', firmId);
+    console.log('Fetching lawyers for Firm ID:', firmId);
 
-    // Find the firm in the database
+    // Ensure the requester is a firm
     const firm = await User.findById(firmId);
-    if (!firm) {
-      return res.status(404).json({ message: 'Firm not found.' });
-    }
-
-    if (firm.role !== 'firm') {
+    if (!firm || firm.role !== 'firm') {
       return res.status(403).json({ message: 'Only firms can access their lawyers.' });
     }
 
     // Query all lawyers with firmId matching this firm
     const lawyers = await User.find({ firmId: firmId, role: 'lawyer' }).select('name email');
+
+    console.log('Found Lawyers:', lawyers); // Log retrieved lawyers
 
     if (!lawyers.length) {
       return res.status(200).json({ message: 'No lawyers found for this firm.', lawyers: [] });
@@ -282,7 +280,7 @@ exports.getLawyersByFirm = async (req, res) => {
   }
 };
 
-// Remove a Lawyer from a Firm
+// ✅ Remove a Lawyer from a Firm
 exports.removeLawyerFromFirm = async (req, res) => {
   try {
     const { lawyerId } = req.params;
@@ -294,17 +292,28 @@ exports.removeLawyerFromFirm = async (req, res) => {
       return res.status(403).json({ message: 'Only firms can remove lawyers.' });
     }
 
-    // Ensure the lawyer exists and is associated with the firm
+    // Ensure the lawyer exists
+    const lawyer = await User.findById(lawyerId);
+    if (!lawyer) {
+      return res.status(404).json({ message: 'Lawyer not found.' });
+    }
+
+    // Ensure the lawyer is associated with the firm
     if (!firm.lawyers.includes(lawyerId)) {
-      return res.status(404).json({ message: 'Lawyer not associated with this firm.' });
+      return res.status(404).json({ message: 'Lawyer is not associated with this firm.' });
     }
 
     // Remove the lawyer from the firm's lawyers list
     firm.lawyers.pull(lawyerId);
     await firm.save();
 
+    // Remove firm's association from the lawyer
+    lawyer.firmId = null;
+    await lawyer.save();
+
     res.status(200).json({ message: 'Lawyer removed from firm successfully.' });
   } catch (error) {
+    console.error("Error removing lawyer:", error);
     res.status(500).json({ error: error.message });
   }
 };

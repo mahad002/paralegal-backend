@@ -18,10 +18,10 @@ router.get('/getAllUsers', auth.protect, auth.admin, userController.getAllUsers)
 
 // Lawyer Management Routes for Firms
 // These specific routes must come BEFORE the /:id route to prevent route conflicts
-router.get('/lawyers', auth.protect, userController.getLawyersByFirm); // Get firm's lawyers
-router.post('/lawyers/add', auth.protect, userController.addExistingLawyerToFirm); // Add an existing lawyer
-router.post('/lawyers/register', auth.protect, userController.registerLawyerThroughFirm); // Register a new lawyer under a firm
-router.delete('/lawyers/:lawyerId', auth.protect, userController.removeLawyerFromFirm); // Remove a lawyer from a firm
+router.get('/lawyers', auth.protect, userController.getLawyersByFirm);
+router.post('/lawyers/add', auth.protect, userController.addExistingLawyerToFirm);
+router.post('/lawyers/register', auth.protect, userController.registerLawyerThroughFirm);
+router.delete('/lawyers/:lawyerId', auth.protect, userController.removeLawyerFromFirm);
 
 // Generic parameter routes must come LAST
 router.get('/:id', auth.protect, userController.getUserById);
