@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const mongoose = require('mongoose');
 
 // Helper: Generate JWT
 const generateToken = (user) => {
@@ -254,8 +255,10 @@ exports.registerLawyerThroughFirm = async (req, res) => {
 exports.getLawyersByFirm = async (req, res) => {
   try {
     const firmId = req.user.id; // The ID of the authenticated firm
+    
+    console.log('Firm ID:', firmId);
 
-    // Ensure the requester is a firm
+    // Find the firm in the database
     const firm = await User.findById(firmId);
     if (!firm) {
       return res.status(404).json({ message: 'Firm not found.' });
@@ -265,10 +268,9 @@ exports.getLawyersByFirm = async (req, res) => {
       return res.status(403).json({ message: 'Only firms can access their lawyers.' });
     }
 
-    // Query all lawyers where `firmId` matches the firm’s ID
+    // Query all lawyers with firmId matching this firm
     const lawyers = await User.find({ firmId: firmId, role: 'lawyer' }).select('name email');
 
-    // Handle case where no lawyers are found
     if (!lawyers.length) {
       return res.status(200).json({ message: 'No lawyers found for this firm.', lawyers: [] });
     }
@@ -279,7 +281,6 @@ exports.getLawyersByFirm = async (req, res) => {
     res.status(500).json({ error: 'Internal server error. Please try again later.' });
   }
 };
-
 
 // Remove a Lawyer from a Firm
 exports.removeLawyerFromFirm = async (req, res) => {
