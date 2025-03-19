@@ -253,19 +253,30 @@ exports.registerLawyerThroughFirm = async (req, res) => {
 // Get Lawyers Under a Firm
 exports.getLawyersByFirm = async (req, res) => {
   try {
-    const firmId = req.user.id.toString();  // The ID of the authenticated firm
+    const firmId = req.user.id; // The ID of the authenticated firm
 
-    // Ensure the user is a firm
-    const firm = await User.findById(firmId).populate('lawyers', 'name email'); // Populate lawyers
+    // Ensure the requester is a firm
+    const firm = await User.findById(firmId);
+    if (!firm) {
+      return res.status(404).json({ message: 'Firm not found.' });
+    }
 
-    if (!firm || firm.role !== 'firm') {
+    if (firm.role !== 'firm') {
       return res.status(403).json({ message: 'Only firms can access their lawyers.' });
     }
 
-    res.status(200).json(firm.lawyers);  // Return the populated lawyers list
+    // Query all lawyers where `firmId` matches the firm’s ID
+    const lawyers = await User.find({ firmId: firmId, role: 'lawyer' }).select('name email');
+
+    // Handle case where no lawyers are found
+    if (!lawyers.length) {
+      return res.status(200).json({ message: 'No lawyers found for this firm.', lawyers: [] });
+    }
+
+    res.status(200).json({ lawyers });
   } catch (error) {
     console.error('Error fetching lawyers by firm:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Internal server error. Please try again later.' });
   }
 };
 
