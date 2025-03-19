@@ -167,7 +167,7 @@ exports.addExistingLawyerToFirm = async (req, res) => {
     const { lawyerId } = req.body;
     const firmId = req.user.id;
 
-    // Check if firm exists and has the right role
+    // Ensure the requester is a firm
     const firm = await User.findById(firmId);
     if (!firm || firm.role !== 'firm') {
       return res.status(403).json({ message: 'Only firms can add lawyers.' });
@@ -194,9 +194,11 @@ exports.addExistingLawyerToFirm = async (req, res) => {
       return res.status(400).json({ message: 'Lawyer is already added to this firm.' });
     }
 
-    // Add the lawyer to the firm’s lawyers list
-    firm.lawyers.push(lawyer._id);
-    await firm.save();
+    // 🔹 **Update lawyer's `firmId` field**
+    await User.findByIdAndUpdate(lawyerId, { firmId }, { new: true });
+
+    // 🔹 **Add lawyer to firm's `lawyers` array**
+    await User.findByIdAndUpdate(firmId, { $push: { lawyers: lawyerId } }, { new: true });
 
     res.status(200).json({ message: 'Lawyer added to firm successfully.' });
   } catch (error) {
@@ -229,20 +231,17 @@ exports.registerLawyerThroughFirm = async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new lawyer
-    const newLawyer = new User({
+    // 🔹 **Create new lawyer with firm association**
+    const newLawyer = await User.create({
       name,
       email,
       password: hashedPassword,
       role: 'lawyer',
-      firmId: firmId,  // Associate with the firm
+      firmId,  // Associate with the firm
     });
 
-    await newLawyer.save();
-
-    // Add to firm’s list
-    firm.lawyers.push(newLawyer._id);
-    await firm.save();
+    // 🔹 **Add to firm's lawyers list**
+    await User.findByIdAndUpdate(firmId, { $push: { lawyers: newLawyer._id } }, { new: true });
 
     res.status(201).json({ message: 'Lawyer registered successfully', lawyer: newLawyer });
   } catch (error) {
@@ -250,6 +249,7 @@ exports.registerLawyerThroughFirm = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // ✅ Get Lawyers Under a Firm
 exports.getLawyersByFirm = async (req, res) => {
