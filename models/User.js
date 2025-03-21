@@ -6,7 +6,7 @@ const UserSchema = new mongoose.Schema({
   password: { type: String, required: true }, // Securely store hashed passwords
   role: {
     type: String,
-    enum: ['admin', 'firm', 'lawyer'],
+    enum: ['admin', 'firm', 'lawyer', 'judge', 'legal_professional', 'legal_researcher'],
     required: true,
   },
   firmId: {
